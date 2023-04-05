@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controller\store;
-use App\Http\Controllers\KinerjaController;
-use App\Http\Controllers\kinerjaController as ControllersKinerjaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,96 +15,81 @@ use App\Http\Controllers\kinerjaController as ControllersKinerjaController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+//Landing Page
+Route::get("/", function(){return view("pages.tamu.index");});
 
-// Route::get('/', function () {
-//     return view('index',[
-//     ]);
-// });
+//Cek Dashboard sebelum login
+Route::get("/home", [BerandaController::class, "index"])->middleware("auth");
+Route::get("/beranda", [BerandaController::class, "index"])->middleware("auth");
 
-Route::get('/', function () {
-    return view('pegawai.p_dashboard',[
-        "title"=>"SPINER | Beranda Pegawai"
-    ]);
+
+// Login
+Route::controller(LoginController::class)->group(function () {
+    Route::get("/", "index")->name("masuk");
+    Route::post("masuk/proses", "proses");
+    Route::get("keluar", "keluar");
 });
 
-Route::get('/pegawai/dashboard', function () {
-    return view('pegawai.p_dashboard',[
-        "title"=>"SPINER | Beranda Pegawai"
-    ]);
+//Admin
+Route::group(["middleware" => ["auth"]], function () {
+    Route::group(["middleware" => ["level:admin"]], function () {
+        //Prodi
+        Route::get("/prodi",[AdminController::class,"prodi"])->name('prodi');
+        Route::get("/tambah-prodi",[AdminController::class,"tambah_prodi"])->name('tambah.prodi');
+        Route::post("/tambah-prodi-proses", [AdminController::class,"create_prodi"])->name('create.prodi');
+        Route::get("/ubah-prodi/{id}",[AdminController::class,"ubah_prodi"])->name('ubah.prodi');
+        Route::post("/update-prodi/{id}", [AdminController::class,"update_prodi"])->name('update.prodi');
+        Route::get("/hapus-prodi/{id}", [AdminController::class,"hapus_prodi"])->name('delete.prodi');
+
+
+        //Pengguna
+        Route::get("/pengawas",[AdminController::class,"pengawas"]);
+        Route::get("/tambah-pengawas",[AdminController::class,"tambah_pengawas"]);
+        Route::post("/tambah-pengawas-proses", [AdminController::class,"create_pengawas"]);
+        Route::get("/ubah-pengawas/{id}",[AdminController::class,"ubah_pengawas"])->name('ubah.pengawas');
+        Route::post("/update-pengawas/{id}", [AdminController::class,"update_pengawas"]);
+        Route::get("/hapus-pengawas/{id}", [AdminController::class,"hapus_pengawas"]);
+
+        Route::get("/petugas",[AdminController::class,"petugas"]);
+        Route::post("/tambah-petugas", [AdminController::class,"create_petugas"]);
+        Route::get("/ubah-petugas",[AdminController::class,"ubah_petugas"]);
+        Route::post("/update-petugas/{id}", [AdminController::class,"update_petugas"]);
+        Route::get("/hapus-petugas/{id}", [AdminController::class,"hapus_petugas"]);
+
+        // //Kelas Prodi D3
+        // Route::get("/kelas-D3",[AdminController::class,"kelasD3"]);
+        // Route::post("/tambah-kelasD3-proses", [AdminController::class,"create_kelasD3"]);
+        // Route::get("/hapus-kelas-D3/{id}", [AdminController::class,"hapus_kelasD3"]);
+        // Route::post("/update-kelasD3-proses/{id}", [AdminController::class,"update_kelasD3"]);
+
+        // //Kelas Prodi D4
+        // Route::get("/kelas-D4",[AdminController::class,"kelasD4"]);
+        // Route::post("/tambah-kelasD4-proses", [AdminController::class,"create_kelasD4"]);
+        // Route::get("/hapus-kelas-D4/{id}", [AdminController::class,"hapus_kelasD4"]);
+        // Route::post("/update-kelasD4-proses/{id}", [AdminController::class,"update_kelasD4"]);
+       
+        //Mahasiswa
+        Route::get("/mahasiswa-D3", [AdminController::class,"mahasiswa"]);
+
+        //Ruangan
+        Route::get("/ruangan",[AdminController::class,"ruangan"]);
+        Route::post("/tambah-ruangan", [AdminController::class,"create_ruangan"]);
+        Route::post("/update-ruangan-proses/{id}", [AdminController::class,"update_ruangan"]);
+        Route::get("/hapus-ruangan/{id}", [AdminController::class,"hapus_ruangan"]);
+    });
 });
 
-Route::get('/pegawai/kinerja-pegawai',[KinerjaController::class,'index'],
-    ["title"=>"SPINER | Kinerja Pegawai"]
-);
-Route::post('/pegawai/kinerja-pegawai',[KinerjaController::class,'index','store'],
-    ["title"=>"SPINER | Kinerja Pegawai"]
-);
 
-Route::get('pegawai/hapus/{id}', [KinerjaController::class, 'destroy'])->name('destroy');
+//Petugas
+Route::group(["middleware" => ["auth"]], function () {
+    Route::group(["middleware" => ["level:petugas"]], function () {
+        
+        });
+    });
 
-Route::post('/pegawai/store',[KinerjaController::class,'store']);
-
-Route::get('/pegawai/tambah-kinerja-pegawai', function () 
-{
-    return view('pegawai.p_tambah_kinerja',[
-        "title"=>"SPINER | Tambah Kinerja"
-    ]);
-});
-
-Route::get('/pegawai/edit-kinerja-pegawai', function () 
-{
-    return view('pegawai.p_edit_kinerja',[
-        "title"=>"SPINER | Edit Kinerja"
-    ]);
-});
-
-Route::get('/pegawai/laporan-terverifikasi', function () 
-{
-    return view('pegawai.p_laporan',[
-        "title"=>"SPINER | Laporan Terverifikasi"
-    ]);
-});
-
-Route::get('/pegawai/pengaturan', function () 
-{
-    return view('pegawai.p_pengaturan',[
-        "title"=>"SPINER |  Pengaturan Pegawai"
-    ]);
-});
-
-Route::get('/pegawai/edit-profil', function () {
-    return view('pegawai.p_edit_profil',[
-        "title"=>"SPINER |  Edit Profil Pegawai"
-    ]);
-});
-
-Route::get('/pegawai/edit-password', function () {
-    return view('pegawai.p_edit_password',[
-        "title"=>"SPINER |  Edit Password Pegawai"
-    ]);
-});
-
-Route::get('/layouts/p_settings', function () {
-    return view('layouts.p_settings',[
-        "title"=>"SPINER | Pengaturan"
-    ]);
-});
-
-Route::get('/layouts/p_editprofile', function () {
-    return view('layouts.p_editprofile',[
-        "title"=>"SPINER | Ubah Profil"
-    ]);
-});
-
-Route::get('/layouts/p_editpassword', function () {
-    return view('layouts.p_editpassword',[
-        "title"=>"SPINER | Ubah Password"
-    ]);
-});
-
-Route::get('/pegawai/cari', [KinerjaController::class,'cari']);
-
-// Route::get('/pegawai/p_kinerja',[KinerjaController::class,'index']);
-// // Route::get('/pegawai/p_kinerja',[KinerjaController::class,'p_kinerja']);
-// Route::post('/pegawai/p_tambah_kinerja',[KinerjaController::class,'create']);
-// Route::post('/pegawai/p_kinerja',[KinerjaController::class,'store']);
+//Pengawas
+Route::group(["middleware" => ["auth"]], function () {
+    Route::group(["middleware" => ["level:pengawas"]], function () {
+        
+        });
+    });
